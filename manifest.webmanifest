@@ -1,0 +1,57 @@
+{
+  "name": "Presensi FUPA",
+  "short_name": "Presensi",
+  "description": "Aplikasi presensi karyawan dan admin dengan autentikasi, kamera, GPS, notifikasi, dan PWA.",
+  "start_url": "index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fff8e1",
+  "theme_color": "#ffd54f",
+  "lang": "id",
+  "orientation": "any",
+  "categories": ["productivity", "business", "utilities"],
+  "icons": [
+    {
+      "src": "https://api.iconify.design/material-symbols/verified-user-rounded.png?height=72",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://api.iconify.design/material-symbols/verified-user-rounded.png?height=96",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://api.iconify.design/material-symbols/verified-user-rounded.png?height=128",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://api.iconify.design/material-symbols/verified-user-rounded.png?height=192",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://api.iconify.design/material-symbols/verified-user-rounded.png?height=256",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://api.iconify.design/material-symbols/verified-user-rounded.png?height=384",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://api.iconify.design/material-symbols/verified-user-rounded.png?height=512",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

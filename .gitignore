@@ -1,0 +1,29 @@
+# Sistem
+.DS_Store
+Thumbs.db
+
+# Log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Node
+node_modules/
+dist/
+build/
+.cache/
+
+# Firebase
+.firebase/
+.firebaserc.local
+firebase-debug.log
+
+# Editor
+.vscode/
+.idea/
+
+# Env
+.env
+.env.local
+.env.*.local

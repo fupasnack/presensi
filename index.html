@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Presensi FUPA — Masuk</title>
+  <meta name="theme-color" content="#ffd54f">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Material+Symbols+Rounded:FILL@1" rel="stylesheet">
+  <style>
+    :root{
+      --bg1:#fff8e1; --bg2:#fff; --accent:#ffd54f; --accent2:#ffca28;
+      --fg:#1f2937; --ok:#2e7d32; --late:#f9a825; --alpa:#c62828;
+      --glass: rgba(255,255,255,0.6); --blur: 16px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--fg);background:linear-gradient(135deg,var(--bg1),var(--bg2))}
+    .wrap{min-height:100%;display:grid;place-items:center;position:relative;overflow:hidden}
+    /* Falling leaves */
+    .leaf{position:absolute;top:-10vh;will-change:transform,opacity;opacity:.9;filter:drop-shadow(0 2px 6px rgba(0,0,0,.15))}
+    @keyframes fall {
+      0%{transform:translateY(-10vh) translateX(0) rotate(0)}
+      100%{transform:translateY(110vh) translateX(var(--dx, 20vw)) rotate(360deg)}
+    }
+    /* Glow sweep */
+    .glow{position:absolute;inset:-40%;pointer-events:none;background:
+      radial-gradient(60% 40% at 70% 20%, rgba(255,255,255,.35), transparent 60%),
+      radial-gradient(40% 30% at 20% 80%, rgba(255,255,255,.25), transparent 60%);
+      animation: shimmer 6s ease-in-out infinite alternate
+    }
+    @keyframes shimmer{from{filter:blur(20px)}to{filter:blur(30px)}}
+
+    .card{
+      width:min(420px,92vw); padding:22px 18px 18px; border-radius:18px;
+      background:linear-gradient(180deg, rgba(255,255,255,.85), rgba(255,255,255,.65));
+      backdrop-filter: blur(var(--blur)); border:1px solid rgba(255,255,255,.5);
+      box-shadow:0 10px 30px rgba(0,0,0,.08);
+      transform:translateY(0); animation: pop .6s ease-out both;
+    }
+    @keyframes pop{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+    .title{display:flex;align-items:center;gap:10px;margin:0 0 12px}
+    .title .material-symbols-rounded{font-size:28px;color:#f59e0b}
+    .subtitle{margin:0 0 16px;color:#4b5563;font-size:14px}
+    .input{display:flex;align-items:center;gap:8px;background:white;border:1px solid #e5e7eb;border-radius:12px;padding:10px 12px;margin:10px 0}
+    .input input{border:0;outline:0;width:100%;font-size:14px;background:transparent}
+    .toggle-eye{cursor:pointer;color:#6b7280}
+    .btn{
+      width:100%; border:0; cursor:pointer; padding:12px 14px; margin-top:10px;
+      border-radius:12px; background:linear-gradient(90deg,var(--accent2),var(--accent));
+      color:#1f2937; font-weight:700; letter-spacing:.2px; box-shadow:0 6px 16px rgba(253,216,53,.35);
+      transition:transform .15s ease, box-shadow .2s ease;
+    }
+    .btn:active{transform:translateY(1px); box-shadow:0 4px 10px rgba(253,216,53,.25)}
+    .row{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:8px}
+    .hint{font-size:12px;color:#6b7280}
+    .link{color:#f59e0b;text-decoration:none;font-weight:600}
+    .error{margin-top:10px;color:#b91c1c;font-size:12px;min-height:16px}
+    .ok{margin-top:10px;color:#256029;font-size:12px;min-height:16px}
+
+    /* Loading overlay */
+    .loading{
+      position:fixed; inset:0; display:none; place-items:center; background:rgba(255,255,255,.65); backdrop-filter: blur(4px);
+      z-index:50;
+    }
+    .spinner{
+      width:56px;height:56px;border-radius:50%;
+      background:conic-gradient(from 0deg at 50% 50%, #ffd54f, #fff59d, #ffe082, #ffd54f);
+      -webkit-mask: radial-gradient(farthest-side,transparent calc(100% - 8px),#000 0);
+      animation:spin 1s linear infinite;
+      box-shadow:0 0 20px rgba(255,213,79,.6), inset 0 0 18px rgba(255,213,79,.8);
+    }
+    @keyframes spin{to{transform:rotate(1turn)}}
+
+    footer{position:fixed;bottom:10px;left:0;right:0;text-align:center;font-size:11px;color:#6b7280}
+
+    /* Material icon baseline fix */
+    .material-symbols-rounded{font-variation-settings:'FILL' 1,'wght' 600,'opsz' 24}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="glow"></div>
+    <div class="card">
+      <h1 class="title"><span class="material-symbols-rounded">verified_user</span> Presensi FUPA</h1>
+      <p class="subtitle">Masuk untuk melanjutkan. Jika lupa sandi, hubungi admin.</p>
+
+      <div class="input">
+        <span class="material-symbols-rounded">mail</span>
+        <input id="email" type="email" placeholder="Email terdaftar" autocomplete="username" inputmode="email" />
+      </div>
+      <div class="input">
+        <span class="material-symbols-rounded">lock</span>
+        <input id="password" type="password" placeholder="Kata sandi" autocomplete="current-password" />
+        <span id="togglePwd" class="material-symbols-rounded toggle-eye" title="Tampilkan/Sembunyikan">visibility</span>
+      </div>
+      <button id="btnLogin" class="btn"><span class="material-symbols-rounded" style="vertical-align:-4px;margin-right:6px;">login</span> Masuk</button>
+      <div class="row">
+        <span class="hint">Gunakan kredensial yang valid.</span>
+        <a class="link" id="help">Hubungi admin</a>
+      </div>
+      <div id="msgError" class="error"></div>
+      <div id="msgOk" class="ok"></div>
+    </div>
+
+    <!-- Decorative leaves -->
+    <svg class="leaf" width="26" height="26" viewBox="0 0 24 24" fill="#ffd54f"></svg>
+    <!-- more leaves added by JS -->
+
+    <div class="loading" id="loading"><div class="spinner"></div></div>
+  </div>
+
+  <footer>© Presensi FUPA — PWA enabled</footer>
+
+  <script type="module">
+    // Firebase v9 modular CDN (only minimal imports used)
+    import { initializeApp, getApps, initializeApp as init2 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getAuth, setPersistence, browserLocalPersistence, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+
+    // ---- CONFIG ----
+    const firebaseConfig = {
+      apiKey: "AIzaSyA-xV3iuv-KAE_-xhiXZSPCTn54EgYUD40",
+      authDomain: "presensi-online-f0964.firebaseapp.com",
+      projectId: "presensi-online-f0964",
+      storageBucket: "presensi-online-f0964.firebasestorage.app",
+      messagingSenderId: "895308244103",
+      appId: "1:895308244103:web:ab240a8be762a44f49c422",
+      measurementId: "G-E9C7760C2S"
+    };
+
+    // Role allowlists (explicit)
+    const ADMIN_UIDS = new Set([
+      "odO8ZtMgTKeao0SDuy9L3gUmkx02", // annisa@fupa.id
+      "ujHnWTnftGh6scTI8cQyN8fhmOB2"  // karomi@fupa.id
+    ]);
+    const KARYAWAN_UIDS = new Set([
+      "HD4EsoL2ykgwQeBl6RP1WfrcCKw1", // cabang1@fupa.id
+      "FD69ceLyhqedlBfhbLb2I0TljY03", // cabang2@fupa.id
+      "h5aw8ppJSgP9PQM0Oc2HtugUAH02"  // cabang3@fupa.id
+    ]);
+
+    // ---- INIT ----
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // PWA service worker register
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
+    }
+
+    // Minimal UI helpers
+    const $ = sel => document.querySelector(sel);
+    const showLoading = (v) => { $('#loading').style.display = v ? 'grid' : 'none'; };
+
+    // Animasi daun jatuh
+    (function spawnLeaves(){
+      const COLORS = ["#ffd54f","#ffecb3","#ffe082","#ffca28"];
+      const COUNT = 16;
+      for (let i=0;i<COUNT;i++){
+        const s = document.createElement('span');
+        s.className='leaf material-symbols-rounded';
+        s.textContent = i%2? 'eco':'spa';
+        const left = Math.random()*100;
+        const size = 20 + Math.random()*12;
+        const dur = 8 + Math.random()*10;
+        s.style.left = left+'vw';
+        s.style.fontSize = size+'px';
+        s.style.color = COLORS[i%COLORS.length];
+        s.style.setProperty('--dx', (Math.random()*40-20)+'vw');
+        s.style.animation = `fall ${dur}s linear ${Math.random()*-20}s infinite`;
+        document.body.appendChild(s);
+      }
+    })();
+
+    // Toggle password
+    $('#togglePwd').addEventListener('click', ()=>{
+      const p = $('#password');
+      if (p.type==='password') {
+        p.type='text'; $('#togglePwd').textContent='visibility_off';
+      } else {
+        p.type='password'; $('#togglePwd').textContent='visibility';
+      }
+    });
+
+    // Ensure base settings exist (no manual collections)
+    async function ensureBase() {
+      const sref = doc(db,'settings','attendance');
+      const s = await getDoc(sref);
+      if (!s.exists()){
+        await setDoc(sref,{
+          requiredByWeekday: { "0": false, "1": true, "2": true, "3": true, "4": true, "5": true, "6": true },
+          windows:{
+            checkInStart:"04:30", checkInEnd:"05:30",
+            checkOutStart:"10:00", checkOutEnd:"11:00",
+            graceMinutes:30
+          },
+          updatedAt: serverTimestamp()
+        },{merge:true});
+      }
+    }
+
+    // Compute role and route
+    async function routeByRole(user){
+      // user doc fallback role
+      const udocRef = doc(db,'users', user.uid);
+      const udoc = await getDoc(udocRef);
+      const role = ADMIN_UIDS.has(user.uid) ? 'admin'
+                 : KARYAWAN_UIDS.has(user.uid) ? 'karyawan'
+                 : (udoc.exists() && udoc.data().role) ? udoc.data().role
+                 : 'karyawan'; // default fallback: non-admin -> karyawan
+
+      // Write/update profile doc quietly
+      await setDoc(udocRef,{
+        email: user.email || null,
+        role,
+        lastLoginAt: serverTimestamp()
+      },{merge:true});
+
+      // Guard: strict routes
+      if (role==='admin') {
+        location.replace('admin.html');
+      } else {
+        location.replace('karyawan.html');
+      }
+    }
+
+    // Persist session and auto-redirect if already logged in
+    setPersistence(auth, browserLocalPersistence).then(()=>{}).catch(()=>{});
+    onAuthStateChanged(auth, async (u)=>{
+      if (u){
+        showLoading(true);
+        await ensureBase();
+        await routeByRole(u);
+      }
+    });
+
+    // Login handler
+    $('#btnLogin').addEventListener('click', async ()=>{
+      const email = $('#email').value.trim();
+      const pass = $('#password').value;
+      $('#msgError').textContent=''; $('#msgOk').textContent='';
+      if (!email || !pass) { $('#msgError').textContent='Lengkapi email dan kata sandi.'; return; }
+      showLoading(true);
+      try{
+        const cred = await signInWithEmailAndPassword(auth, email, pass);
+        $('#msgOk').textContent='Berhasil masuk. Mengalihkan...';
+        await ensureBase();
+        await routeByRole(cred.user);
+      }catch(e){
+        $('#msgError').textContent = 'Gagal masuk. Periksa data dan coba lagi.';
+      }finally{
+        showLoading(false);
+      }
+    });
+
+    // “Hubungi admin” click (tidak membocorkan email)
+    $('#help').addEventListener('click', ()=>{
+      alert('Jika lupa sandi atau ada kendala, silakan hubungi admin di kantor Anda.');
+    });
+
+    // Improve perceived speed: warm up Firestore read
+    (async ()=>{ try{ await ensureBase(); }catch(_){} })();
+
+    // Optional: enter key
+    document.addEventListener('keydown', e=>{
+      if (e.key==='Enter') $('#btnLogin').click();
+    });
+  </script>
+</body>
+</html>
