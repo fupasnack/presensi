@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <title>Presensi FUPA — Admin</title>
+  <meta name="theme-color" content="#ffd54f">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Material+Symbols+Rounded:FILL@1" rel="stylesheet">
+  <style>
+    :root{
+      --bg1:#fff8e1; --bg2:#ffffff; --accent:#ffd54f; --accent2:#ffca28;
+      --fg:#1f2937; --muted:#6b7280; --ok:#2e7d32; --late:#f9a825; --alpa:#c62828;
+      --glass: rgba(255,255,255,.7); --blur: 18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--fg);background:linear-gradient(135deg,var(--bg1),var(--bg2))}
+    .page{min-height:100%;display:flex;flex-direction:column;position:relative;overflow-x:hidden}
+    .glow{position:absolute;inset:-40%;pointer-events:none;background:
+      radial-gradient(50% 40% at 20% 20%, rgba(255,255,255,.35), transparent 60%),
+      radial-gradient(40% 30% at 80% 70%, rgba(255,255,255,.25), transparent 60%);
+      animation: shimmer 7s ease-in-out infinite alternate; z-index:0
+    }
+    @keyframes shimmer{from{filter:blur(18px)}to{filter:blur(30px)}}
+
+    header{
+      position:sticky;top:0;z-index:5;
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      padding:12px 14px;background:linear-gradient(180deg,rgba(255,255,255,.86),rgba(255,255,255,.65));
+      backdrop-filter: blur(var(--blur)); border-bottom:1px solid rgba(255,255,255,.6)
+    }
+    .brand{display:flex;align-items:center;gap:10px;font-weight:800}
+    .brand .material-symbols-rounded{color:#f59e0b}
+    .clock{font-size:12px;color:#374151}
+    .actions{display:flex;align-items:center;gap:8px}
+    .icon-btn{
+      display:grid;place-items:center;width:40px;height:40px;border-radius:12px;cursor:pointer;border:1px solid rgba(0,0,0,.06);
+      background:linear-gradient(180deg,rgba(255,255,255,.9),rgba(255,255,255,.7)); box-shadow:0 4px 12px rgba(0,0,0,.06); transition:transform .12s ease
+    }
+    .icon-btn:active{transform:translateY(1px)}
+    .material-symbols-rounded{font-variation-settings:'FILL' 1,'wght' 600,'opsz' 24}
+
+    main{position:relative;z-index:1;padding:14px;display:grid;gap:14px;grid-template-columns:1fr}
+    @media(min-width:1140px){ main{grid-template-columns: 1fr .6fr} }
+
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.85), rgba(255,255,255,.65));
+      backdrop-filter: blur(var(--blur)); border:1px solid rgba(255,255,255,.55); border-radius:18px;
+      box-shadow:0 14px 30px rgba(0,0,0,.08);
+      padding:14px; overflow:hidden; position:relative;
+      animation: pop .45s ease-out both
+    }
+    @keyframes pop{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    .card h3{margin:0 0 8px;font-size:16px}
+    .muted{color:var(--muted);font-size:12px}
+
+    .row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .grid{display:grid;gap:10px}
+    .pill{padding:6px 10px;border-radius:999px;background:white;border:1px solid #eee;font-size:12px}
+
+    .btn{
+      border:0; cursor:pointer; padding:10px 12px; border-radius:12px; font-weight:700; letter-spacing:.2px; color:#1f2937;
+      background:linear-gradient(90deg,var(--accent2),var(--accent)); box-shadow:0 8px 18px rgba(253,216,53,.35);
+      display:flex; align-items:center; gap:6px
+    }
+    .btn.secondary{background:linear-gradient(90deg,#fff,#fff); border:1px solid #e5e7eb; box-shadow:none}
+    .btn.danger{background:linear-gradient(90deg,#ff8a80,#ff5252); color:white; box-shadow:0 8px 18px rgba(244,67,54,.25)}
+    .btn.success{background:linear-gradient(90deg,#a5d6a7,#66bb6a); color:#0b3d0f; box-shadow:0 8px 18px rgba(76,175,80,.25)}
+
+    table{width:100%;border-collapse:separate;border-spacing:0 8px}
+    th,td{font-size:12px;text-align:left;padding:8px 10px;vertical-align:top}
+    thead th{color:#374151}
+    tbody tr{background:white;border:1px solid #eee}
+    tbody td:first-child{border-top-left-radius:10px;border-bottom-left-radius:10px}
+    tbody td:last-child{border-top-right-radius:10px;border-bottom-right-radius:10px}
+    .badge{padding:6px 8px;border-radius:999px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:6px}
+    .ok{background:#e8f5e9;color:#1b5e20}
+    .late{background:#fff8e1;color:#b7791f}
+    .alpa{background:#ffebee;color:#8e1b1b}
+
+    .fab{
+      position:fixed; right:16px; bottom:16px; z-index:6;
+      width:56px;height:56px;border-radius:16px; display:grid; place-items:center; cursor:pointer; border:0;
+      background:linear-gradient(120deg,var(--accent),#ffe082);
+      box-shadow:0 12px 26px rgba(253,216,53,.45); transition:transform .12s ease
+    }
+    .fab:active{transform:translateY(1px)}
+
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.28);display:none;place-items:center;z-index:20}
+    .popup{
+      width:min(760px,94vw); max-height:86vh; overflow:auto; padding:14px; border-radius:18px; background:linear-gradient(180deg,rgba(255,255,255,.97),rgba(255,255,255,.85));
+      backdrop-filter: blur(var(--blur)); border:1px solid rgba(255,255,255,.6); box-shadow:0 20px 40px rgba(0,0,0,.2); animation: pop .2s ease-out both
+    }
+    .field{display:grid;gap:6px;margin:8px 0}
+    .field label{font-size:12px;color:#374151}
+    .input{display:flex;align-items:center;gap:8px;background:white;border:1px solid #e5e7eb;border-radius:12px;padding:10px 12px}
+    .input input, .input textarea, .input select{border:0;outline:0;width:100%;font-size:14px;background:transparent}
+    .avatar{width:72px;height:72px;border-radius:16px;object-fit:cover;border:1px solid #eee;background:white}
+
+    .leaf{position:absolute;top:-10vh;opacity:.9;filter:drop-shadow(0 2px 6px rgba(0,0,0,.15));z-index:0}
+    @keyframes fall{0%{transform:translateY(-10vh) translateX(0) rotate(0)}100%{transform:translateY(110vh) translateX(var(--dx, 20vw)) rotate(360deg)}}
+
+    .toast{
+      position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:40;display:none;
+      padding:10px 14px;border-radius:14px;background:#111827;color:white;font-size:13px;box-shadow:0 10px 24px rgba(0,0,0,.25)
+    }
+    .loading{position:fixed;inset:0;display:none;place-items:center;background:rgba(255,255,255,.7);backdrop-filter: blur(4px);z-index:50}
+    .spinner{
+      width:58px;height:58px;border-radius:50%;
+      background:conic-gradient(from 0deg at 50% 50%, #ffd54f, #fff59d, #ffe082, #ffd54f);
+      -webkit-mask: radial-gradient(farthest-side,transparent calc(100% - 8px),#000 0);
+      animation:spin 1s linear infinite; box-shadow:0 0 22px rgba(255,213,79,.6), inset 0 0 18px rgba(255,213,79,.8);
+    }
+    @keyframes spin{to{transform:rotate(1turn)}}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="glow"></div>
+
+    <header>
+      <div class="brand"><span class="material-symbols-rounded">workspace_premium</span> <span>Admin Presensi</span></div>
+      <div class="clock"><span id="serverTime">--:--:--</span></div>
+      <div class="actions">
+        <button id="btnNotif" class="icon-btn" title="Permintaan cuti"><span class="material-symbols-rounded">notifications_active</span></button>
+        <button id="btnProfile" class="icon-btn" title="Profil & Akun"><span class="material-symbols-rounded">manage_accounts</span></button>
+      </div>
+    </header>
+
+    <main>
+      <section class="card">
+        <div class="row">
+          <h3>Riwayat presensi</h3>
+          <div class="row" style="gap:6px;flex-wrap:wrap;justify-content:flex-end">
+            <div class="input" style="padding:6px 10px">
+              <select id="filterRange" style="width:auto">
+                <option value="daily">Harian</option>
+                <option value="weekly">Mingguan</option>
+                <option value="monthly">Bulanan</option>
+                <option value="yearly">Tahunan</option>
+              </select>
+            </div>
+            <div class="input" style="padding:6px 10px"><input type="date" id="filterDate"/></div>
+            <div class="input" style="padding:6px 10px"><input type="text" id="filterName" placeholder="Cari nama"/></div>
+            <button class="btn secondary" id="btnApply"><span class="material-symbols-rounded">filter_alt</span> Terapkan</button>
+            <button class="btn" id="btnExport"><span class="material-symbols-rounded">file_download</span> Export CSV</button>
+          </div>
+        </div>
+
+        <div class="grid" style="margin-top:10px">
+          <div class="muted">Klik foto untuk membuka di tab baru. Hapus akan menghapus rekaman beserta fotonya di Cloudinary.</div>
+          <div class="card" style="padding:0;overflow:auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nama</th><th>Tanggal</th><th>Jam</th><th>Jenis</th><th>Status</th><th>Koordinat</th><th>Foto</th><th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tbody"></tbody>
+            </table>
+          </div>
+          <div class="row">
+            <span class="muted" id="countInfo">0 data</span>
+            <div class="row" style="gap:8px">
+              <button class="btn secondary" id="btnPrev"><span class="material-symbols-rounded">chevron_left</span> Sebelumnya</button>
+              <button class="btn secondary" id="btnNext"><span class="material-symbols-rounded">chevron_right</span> Berikutnya</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="card">
+        <h3>Informasi</h3>
+        <ul class="muted" style="margin:8px 0 0 14px;">
+          <li>Waktu server sinkron.</li>
+          <li>Atur kewajiban presensi via tombol Pengumuman (kanan bawah).</li>
+          <li>Setujui/Tolak cuti di panel notifikasi.</li>
+        </ul>
+
+        <div style="margin-top:16px;">
+          <h3>Ringkas</h3>
+          <div class="row">
+            <span class="pill" id="sumToday">Hari ini: -</span>
+            <span class="pill" id="sumLate">Terlambat: -</span>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <button id="btnPengumuman" class="fab" title="Buat pengumuman"><span class="material-symbols-rounded">campaign</span></button>
+
+    <div id="ovNotif" class="overlay"><div class="popup">
+      <div class="row">
+        <h3>Permintaan cuti</h3>
+        <button class="icon-btn" id="closeNotif"><span class="material-symbols-rounded">close</span></button>
+      </div>
+      <div id="leaveList" class="grid"></div>
+      <h3 style="margin-top:12px;">Notifikasi</h3>
+      <div id="notifList" class="grid"></div>
+    </div></div>
+
+    <div id="ovProfile" class="overlay"><div class="popup">
+      <div class="row">
+        <h3>Profil admin</h3>
+        <button class="icon-btn" id="closeProfile"><span class="material-symbols-rounded">close</span></button>
+      </div>
+      <div class="row" style="gap:12px;align-items:center;">
+        <img id="avatar" class="avatar" src="" alt="Avatar"/>
+        <div class="actions">
+          <label class="btn secondary" for="profileFile"><span class="material-symbols-rounded">photo</span> Ganti foto</label>
+          <input type="file" id="profileFile" accept="image/*" capture="user" style="display:none"/>
+        </div>
+      </div>
+      <div class="field">
+        <label>Nama</label>
+        <div class="input"><input id="profileName" placeholder="Nama lengkap"/></div>
+      </div>
+      <div class="field">
+        <label>Alamat</label>
+        <div class="input"><textarea id="profileAddr" rows="2" placeholder="Alamat"></textarea></div>
+      </div>
+      <div class="actions" style="margin-top:8px;">
+        <button class="btn secondary" id="btnLogout"><span class="material-symbols-rounded">logout</span> Keluar</button>
+        <button class="btn" id="btnSaveProfile"><span class="material-symbols-rounded">save</span> Simpan</button>
+      </div>
+
+      <hr style="margin:14px 0;border:0;border-top:1px solid #eee">
+
+      <h3>Buat akun karyawan</h3>
+      <p class="muted">Tahap: isi email dan kata sandi → klik Buat → salin UID yang muncul → opsional: isi UID referensi lalu Konfirmasi.</p>
+      <div class="grid">
+        <div class="field">
+          <label>Email karyawan</label>
+          <div class="input"><input id="newEmail" type="email" placeholder="nama@domain.com"/></div>
+        </div>
+        <div class="field">
+          <label>Kata sandi</label>
+          <div class="input"><input id="newPass" type="password" placeholder="Minimal 6 karakter"/></div>
+        </div>
+        <div class="row" style="gap:8px">
+          <button class="btn" id="btnCreateUser"><span class="material-symbols-rounded">person_add</span> Buat</button>
+          <span class="pill" id="createdUid">UID: -</span>
+        </div>
+        <div class="field">
+          <label>UID referensi (opsional)</label>
+          <div class="input"><input id="refUid" placeholder="Tempel UID referensi di sini"/></div>
+        </div>
+        <div class="actions">
+          <button class="btn success" id="btnConfirmRef"><span class="material-symbols-rounded">verified</span> Konfirmasi</button>
+        </div>
+      </div>
+    </div></div>
+
+    <div id="ovPengumuman" class="overlay"><div class="popup">
+      <div class="row">
+        <h3>Pengumuman & Aturan hari</h3>
+        <button class="icon-btn" id="closePengumuman"><span class="material-symbols-rounded">close</span></button>
+      </div>
+
+      <div class="card">
+        <h3>Kewajiban presensi per hari</h3>
+        <p class="muted">Ubah hari yang wajib presensi. Minggu (0) s/d Sabtu (6).</p>
+        <div class="row" style="gap:6px;flex-wrap:wrap" id="weekdayToggles"></div>
+        <div class="actions" style="margin-top:8px;">
+          <button class="btn" id="btnSaveWeek"><span class="material-symbols-rounded">save</span> Simpan</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px;">
+        <h3>Kirim pengumuman</h3>
+        <div class="field">
+          <label>Ditujukan kepada</label>
+          <div class="input">
+            <select id="toTarget">
+              <option value="all">Semua karyawan</option>
+              <option value="admin">Admin saja</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Judul</label>
+          <div class="input"><input id="annTitle" placeholder="Judul pengumuman"/></div>
+        </div>
+        <div class="field">
+          <label>Isi</label>
+          <div class="input"><textarea id="annBody" rows="3" placeholder="Teks yang akan diterima karyawan"></textarea></div>
+        </div>
+        <div class="actions">
+          <button class="btn" id="btnSendAnn"><span class="material-symbols-rounded">send</span> Kirim</button>
+        </div>
+      </div>
+    </div></div>
+
+    <span class="leaf material-symbols-rounded" style="left:10vw;color:#ffd54f;font-size:22px;animation:fall 12s linear infinite;">spa</span>
+    <span class="leaf material-symbols-rounded" style="left:40vw;color:#ffe082;font-size:28px;animation:fall 16s linear -3s infinite;">eco</span>
+    <span class="leaf material-symbols-rounded" style="left:70vw;color:#ffca28;font-size:20px;animation:fall 14s linear -6s infinite;">spa</span>
+
+    <div id="toast" class="toast"></div>
+    <div id="loading" class="loading"><div class="spinner"></div></div>
+  </div>
+
+  <script type="module">
+    import { initializeApp, getApps, initializeApp as init2 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+    import {
+      getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, collection, serverTimestamp,
+      onSnapshot, query, where, orderBy, limit, startAfter, getDocs, deleteDoc
+    } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+
+    // ---- CONFIG ----
+    const firebaseConfig = {
+      apiKey: "AIzaSyA-xV3iuv-KAE_-xhiXZSPCTn54EgYUD40",
+      authDomain: "presensi-online-f0964.firebaseapp.com",
+      projectId: "presensi-online-f0964",
+      storageBucket: "presensi-online-f0964.firebasestorage.app",
+      messagingSenderId: "895308244103",
+      appId: "1:895308244103:web:ab240a8be762a44f49c422",
+      measurementId: "G-E9C7760C2S"
+    };
+
+    const ADMIN_UIDS = new Set([
+      "odO8ZtMgTKeao0SDuy9L3gUmkx02", // annisa@fupa.id
+      "ujHnWTnftGh6scTI8cQyN8fhmOB2"  // karomi@fupa.id
+    ]);
+
+    const CLOUDINARY_CLOUD = "dn2o2vf04";
+    const CLOUDINARY_PRESET = "presensi_unsigned";
+
+    // ---- INIT ----
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Secondary app for creating users (admin stays signed in)
+    const secondaryApp = getApps().find(a=>a.name==='secondary') || init2(firebaseConfig, 'secondary');
+    const secondaryAuth = getAuth(secondaryApp);
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
+    }
+
+    // Helpers
+    const $ = s => document.querySelector(s);
+    const $$ = s => Array.from(document.querySelectorAll(s));
+    const showLoading = v => { $('#loading').style.display = v ? 'grid' : 'none'; };
+    const toast = (t) => { const el = $('#toast'); el.textContent = t; el.style.display = 'block'; setTimeout(()=> el.style.display='none', 2600); };
+    async function ensureNotifPermission(){
+      try{
+        if (!("Notification" in window)) return;
+        if (Notification.permission === "granted") return;
+        if (Notification.permission !== "denied") await Notification.requestPermission();
+      }catch(_){}
+    }
+    function pushNotif(title, body){
+      try{
+        if (!("Notification" in window)) return;
+        if (Notification.permission === "granted"){
+          new Notification(title,{ body, icon: "https://fonts.gstatic.com/s/i/short-term/release/materialsymbolsrounded/notifications_active/default/48px.svg" });
+        }
+      }catch(_){}
+    }
+
+    // Server time
+    let serverOffsetMs = 0;
+    async function syncServerTime(){
+      const ref = doc(db,'meta','now');
+      await setDoc(ref,{ now: serverTimestamp() },{merge:true});
+      const snap = await getDoc(ref);
+      const sv = snap.exists() && snap.data().now && snap.data().now.toDate ? snap.data().now.toDate() : null;
+      if (sv) serverOffsetMs = sv.getTime() - Date.now();
+    }
+    function serverNow(){ return new Date(Date.now() + serverOffsetMs); }
+    function fmtDate(d){ return d.toLocaleString('id-ID', { hour12:false }); }
+    function ymd(d){
+      const z=n=>String(n).padStart(2,'0');
+      return d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate());
+    }
+    function addDays(d, n){ const x=new Date(d); x.setDate(x.getDate()+n); return x; }
+    function weekRange(d){ const day=(d.getDay()+6)%7; const start=addDays(new Date(d),-day); const end=addDays(start,6); return {start,end}; }
+
+    // Guard: admin only
+    async function routeGuard(u){
+      const udoc = await getDoc(doc(db,'users', u.uid));
+      const role = ADMIN_UIDS.has(u.uid) ? 'admin' : (udoc.exists() && udoc.data().role) ? udoc.data().role : 'karyawan';
+      if (role !== 'admin'){
+        location.replace(role==='karyawan' ? 'karyawan.html' : 'index.html');
+        throw new Error('forbidden');
+      }
+      await setDoc(doc(db,'users', u.uid), { role:'admin', email:u.email || null, lastActiveAt: serverTimestamp() }, { merge:true });
+      return 'admin';
+    }
+
+    // Profile
+    let currentUser = null;
+    let profile = { name:'', address:'', avatar:'', avatarDeleteToken:null };
+    let newAvatarBlob = null;
+
+    function dataURLtoBlob(dataurl){
+      const arr=dataurl.split(','), mime=arr[0].match(/:(.*?);/)[1], bstr=atob(arr[1]);
+      let n=bstr.length; const u8=new Uint8Array(n); while(n--){u8[n]=bstr.charCodeAt(n);} return new Blob([u8],{type:mime});
+    }
+    async function compressFile(file, maxW=512, maxH=512, quality=0.75){
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      await new Promise((res,rej)=>{ img.onload=res; img.onerror=rej; img.src=url; });
+      const canvas = document.createElement('canvas');
+      const ratio = Math.min(maxW/img.naturalWidth, maxH/img.naturalHeight);
+      const w = Math.round(img.naturalWidth*ratio), h=Math.round(img.naturalHeight*ratio);
+      canvas.width=w; canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      const dataUrl = canvas.toDataURL('image/jpeg', quality);
+      URL.revokeObjectURL(url);
+      return dataURLtoBlob(dataUrl);
+    }
+    async function uploadBlobToCloudinary(blob, folder){
+      const fd = new FormData();
+      fd.append('file', blob, 'avatar.jpg');
+      fd.append('upload_preset', CLOUDINARY_PRESET);
+      fd.append('folder', folder);
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method:'POST', body: fd });
+      const js = await res.json();
+      return { url: js.secure_url, deleteToken: js.delete_token || null };
+    }
+    async function deleteByToken(token){
+      if (!token) return;
+      try{
+        const fd = new FormData();
+        fd.append('token[43dcd9a7-70db-4a1f-b0ae-981daa162054](https://github.com/SnowWhite1049/petzikbreeder/tree/cc9f4dea8077f4df4ef8756e5d79a998c0c32662/resources%2Fviews%2Fwelcome.blade.php?citationMarker=43dcd9a7-70db-4a1f-b0ae-981daa162054 "1")[43dcd9a7-70db-4a1f-b0ae-981daa162054](https://github.com/llz1990/xn-lr-web/tree/d29746f09dd28374126b5e8a4d3c944d9ea8ec61/src%2Fapp%2Fcommon%2Fdynamic-form%2Fform%2Finput%2Ffile-input.component.ts?citationMarker=43dcd9a7-70db-4a1f-b0ae-981daa162054 "2")
+        fd.append('token', token);
+        await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/delete_by_token`, {
+          method: 'POST',
+          body: fd
+        });
+      } catch (_) {}
+    }
+
+    // Hapus presensi + foto
+    async function deletePresensi(id, token) {
+      showLoading(true);
+      try {
+        if (token) await deleteByToken(token);
+        await deleteDoc(doc(db, 'attendance', id));
+        toast('Presensi dihapus.');
+      } catch (_) {
+        toast('Gagal menghapus presensi.');
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    // Render satu baris presensi
+    function renderPresensiRow(docSnap) {
+      const d = docSnap.data();
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${d.name || '-'}</td>
+        <td>${d.date || '-'}</td>
+        <td>${d.time || '-'}</td>
+        <td>${d.jenis || '-'}</td>
+        <td><span class="badge ${d.status === 'tepat_waktu' ? 'ok' : d.status === 'terlambat' ? 'late' : 'alpa'}">${d.status}</span></td>
+        <td>${d.lat?.toFixed(5)}, ${d.lng?.toFixed(5)}</td>
+        <td><a href="${d.photoUrl}" target="_blank">Lihat</a></td>
+        <td><button class="btn danger" onclick="deletePresensi('${docSnap.id}', '${d.photoDeleteToken || ''}')"><span class="material-symbols-rounded">delete</span></button></td>
+      `;
+      return tr;
+    }
+
+    // Load riwayat presensi
+    async function loadPresensi() {
+      showLoading(true);
+      try {
+        const range = $('#filterRange').value;
+        const date = $('#filterDate').value;
+        const name = $('#filterName').value.trim().toLowerCase();
+        const baseQuery = query(collection(db, 'attendance'), orderBy('createdAt', 'desc'), limit(100));
+        const snap = await getDocs(baseQuery);
+        const tbody = $('#tbody');
+        tbody.innerHTML = '';
+        let count = 0;
+        snap.forEach(docSnap => {
+          const d = docSnap.data();
+          const matchName = !name || (d.name || '').toLowerCase().includes(name);
+          const matchDate = !date || d.date === date;
+          const matchRange = true; // implement later
+          if (matchName && matchDate && matchRange) {
+            tbody.appendChild(renderPresensiRow(docSnap));
+            count++;
+          }
+        });
+        $('#countInfo').textContent = `${count} data`;
+      } catch (_) {
+        toast('Gagal memuat data.');
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    $('#btnApply').addEventListener('click', loadPresensi);
+
+    // Export CSV
+    $('#btnExport').addEventListener('click', async () => {
+      try {
+        const rows = [['Nama','Tanggal','Jam','Jenis','Status','Lat','Lng','Foto']];
+        $$('#tbody tr').forEach(tr => {
+          const cols = Array.from(tr.querySelectorAll('td')).map(td => td.textContent.trim());
+          rows.push(cols);
+        });
+        const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'riwayat_presensi.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (_) {
+        toast('Gagal export CSV.');
+      }
+    });
+
+    // Persetujuan cuti
+    function renderCutiItem(docSnap) {
+      const d = docSnap.data();
+      const wrap = document.createElement('div');
+      wrap.className = 'card';
+      wrap.innerHTML = `
+        <div class="row">
+          <strong>${d.name || 'Karyawan'} (${d.jenis})</strong>
+          <span class="pill">${d.date}</span>
+        </div>
+        <div class="muted">${d.note || '-'}</div>
+        <div class="row" style="margin-top:8px;">
+          <button class="btn success" onclick="setujuiCuti('${docSnap.id}')"><span class="material-symbols-rounded">check</span> Setujui</button>
+          <button class="btn danger" onclick="tolakCuti('${docSnap.id}')"><span class="material-symbols-rounded">close</span> Tolak</button>
+        </div>
+      `;
+      return wrap;
+    }
+
+    async function setujuiCuti(id) {
+      showLoading(true);
+      try {
+        const ref = doc(db, 'leaveRequests', id);
+        await updateDoc(ref, {
+          status: 'disetujui',
+          updatedAt: serverTimestamp()
+        });
+        const d = await getDoc(ref);
+        const v = d.data();
+        await addDoc(collection(db, 'notifications'), {
+          to: v.uid,
+          title: 'Cuti disetujui',
+          body: `Cuti tanggal ${v.date} telah disetujui.`,
+          createdAt: serverTimestamp()
+        });
+        await setDoc(doc(db, 'overrides', `${v.date}_${v.uid}`), {
+          exempt: true,
+          reason: 'Cuti disetujui',
+          updatedAt: serverTimestamp()
+        });
+        toast('Cuti disetujui.');
+      } catch (_) {
+        toast('Gagal menyetujui.');
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    async function tolakCuti(id) {
+      showLoading(true);
+      try {
+        const ref = doc(db, 'leaveRequests', id);
+        await updateDoc(ref, {
+          status: 'ditolak',
+          updatedAt: serverTimestamp()
+        });
+        const d = await getDoc(ref);
+        const v = d.data();
+        await addDoc(collection(db, 'notifications'), {
+          to: v.uid,
+          title: 'Cuti ditolak',
+          body: `Cuti tanggal ${v.date} ditolak oleh admin.`,
+          createdAt: serverTimestamp()
+        });
+        toast('Cuti ditolak.');
+      } catch (_) {
+        toast('Gagal menolak.');
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    function listenCuti() {
+      const q = query(collection(db, 'leaveRequests'), where('status', '==', 'pending'), orderBy('createdAt', 'desc'), limit(20));
+      onSnapshot(q, snap => {
+        const box = $('#leaveList');
+        box.innerHTML = '';
+        snap.forEach(docSnap => {
+          box.appendChild(renderCutiItem(docSnap));
+        });
+      });
+    }
+
+    function listenNotif() {
+      const q = query(collection(db, 'notifications'), where('to', 'in', ['admin', 'all']), orderBy('createdAt', 'desc'), limit(20));
+      onSnapshot(q, snap => {
+        const box = $('#notifList');
+        box.innerHTML = '';
+        snap.forEach(docSnap => {
+          const d = docSnap.data();
+          const el = document.createElement('div');
+          el.className = 'card';
+          el.innerHTML = `
+            <div class="row">
+              <strong>${d.title || 'Notifikasi'}</strong>
+              <span class="pill">${d.createdAt?.toDate?.().toLocaleString('id-ID') || '-'}</span>
+            </div>
+            <div class="muted">${d.body || '-'}</div>
+          `;
+          box.appendChild(el);
+        });
+      });
+    }
+
+    // Pengumuman
+    $('#btnSendAnn').addEventListener('click', async () => {
+      const to = $('#toTarget').value;
+      const title = $('#annTitle').value.trim();
+      const body = $('#annBody').value.trim();
+      if (!title || !body) return toast('Isi judul dan isi pengumuman.');
+      showLoading(true);
+      try {
+        await addDoc(collection(db, 'notifications'), {
+          to,
+          title,
+          body,
+          createdAt: serverTimestamp()
+        });
+        toast('Pengumuman dikirim.');
+        $('#ovPengumuman').style.display = 'none';
+      } catch (_) {
+        toast('Gagal kirim pengumuman.');
+      } finally {
+        showLoading(false);
+      }
+    });
+
+    // Hari wajib presensi
+    async function loadWeekdaySettings() {
+      const ref = doc(db, 'settings', 'attendance');
+      const snap = await getDoc(ref);
+      const data = snap.exists() ? snap.data()
+      const data = snap.exists() ? snap.data() : {};
+      const weekdays = data.requiredByWeekday || { "0": false, "1": true, "2": true, "3": true, "4": true, "5": true, "6": true };
+      const box = $('#weekdayToggles');
+      box.innerHTML = '';
+      for (let i = 0; i <= 6; i++) {
+        const btn = document.createElement('button');
+        btn.className = 'btn ' + (weekdays[i] ? 'success' : 'secondary');
+        btn.textContent = `Hari ${i}`;
+        btn.dataset.day = i;
+        btn.dataset.active = weekdays[i] ? '1' : '0';
+        btn.addEventListener('click', () => {
+          const active = btn.dataset.active === '1';
+          btn.dataset.active = active ? '0' : '1';
+          btn.className = 'btn ' + (active ? 'secondary' : 'success');
+        });
+        box.appendChild(btn);
+      }
+    }
+
+    $('#btnSaveWeek').addEventListener('click', async () => {
+      const btns = $$('#weekdayToggles button');
+      const result = {};
+      btns.forEach(btn => {
+        const day = btn.dataset.day;
+        const active = btn.dataset.active === '1';
+        result[day] = active;
+      });
+      showLoading(true);
+      try {
+        await setDoc(doc(db, 'settings', 'attendance'), {
+          requiredByWeekday: result,
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+        toast('Pengaturan hari disimpan.');
+        $('#ovPengumuman').style.display = 'none';
+      } catch (_) {
+        toast('Gagal menyimpan pengaturan.');
+      } finally {
+        showLoading(false);
+      }
+    });
+
+    // Clock
+    function startClock() {
+      const el = $('#serverTime');
+      setInterval(() => {
+        el.textContent = fmtDate(serverNow());
+      }, 1000);
+    }
+
+    // Create akun karyawan (konfirmasi UID)
+    $('#btnConfirmRef').addEventListener('click', async () => {
+      const uid = $('#refUid').value.trim();
+      if (!uid) return toast('Isi UID referensi.');
+      showLoading(true);
+      try {
+        await setDoc(doc(db, 'users', uid), {
+          role: 'karyawan',
+          confirmedBy: currentUser.uid,
+          confirmedAt: serverTimestamp()
+        }, { merge: true });
+        toast('UID dikonfirmasi sebagai karyawan.');
+      } catch (_) {
+        toast('Gagal konfirmasi UID.');
+      } finally {
+        showLoading(false);
+      }
+    });
+
+    // Init
+    onAuthStateChanged(auth, async (u) => {
+      if (!u) return location.replace('index.html');
+      showLoading(true);
+      try {
+        currentUser = u;
+        await routeGuard(u);
+        await syncServerTime();
+        await loadProfile();
+        await ensureNotifPermission();
+        await loadWeekdaySettings();
+        startClock();
+        listenCuti();
+        listenNotif();
+        loadPresensi();
+      } catch (_) {
+        toast('Gagal inisialisasi.');
+      } finally {
+        showLoading(false);
+      }
+    });
+  </script>
+</body>
+</html>
